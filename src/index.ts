@@ -37,3 +37,5 @@ console.log(
       console.log(data, 26);
     })
 );
+
+console.log("ASYNC");

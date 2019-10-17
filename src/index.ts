@@ -11,7 +11,9 @@ document.getElementById("app").innerHTML = `
 console.log(
   new PromiseHandler((res, rej) => {
     console.log("HERE 2", res, rej);
-    1 % 2 ? res(10) : rej(20);
+    setTimeout(() => {
+      1 % 2 ? res(10) : rej(20);
+    }, 5000);
     console.log("HERE 3");
   })
     .then(data => {

@@ -26,11 +26,12 @@ console.log(
     })
     .catch(data => {
       console.log(data, 24);
+      return 170;
     })
     .catch(data => {
       console.log(25);
     })
     .then(data => {
-      console.log(26);
+      console.log(data, 26);
     })
 );

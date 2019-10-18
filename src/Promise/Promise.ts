@@ -21,7 +21,7 @@ class Promise {
   }
 
   runFirstTask = (task) => {
-    setTimeout(task, PROMISE_EVENT_QUEUE_TIME);
+    process.nextTick(task, PROMISE_EVENT_QUEUE_TIME);
   }
 
   notifyFetchTask = () => {

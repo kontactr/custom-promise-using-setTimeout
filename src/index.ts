@@ -81,6 +81,7 @@ setTimeout(() => {
 console.log("ASYNC");
 
 let t = new PromiseHandler((res, rej) => {
+  console.log("I'm called")
   res(10);
 })
   .then(data => {
@@ -97,8 +98,10 @@ let t = new PromiseHandler((res, rej) => {
   });
 
 t = new PromiseHandler((res1, rej1) => {
+  console.log("I'm called")
   res1(
     new PromiseHandler((res, rej) => {
+      console.log("I'm called")
       res(50);
     })
   );

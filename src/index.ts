@@ -8,7 +8,6 @@ document.getElementById("app").innerHTML = `
 </div>
 `;
 
-
 let p =  new PromiseHandler((res, rej) => {
     console.log("HERE 2", res, rej);
     setTimeout(() => {
@@ -79,3 +78,27 @@ setTimeout(() => {
 }, 9000)
 
 console.log("ASYNC");
+
+let t = new PromiseHandler((res, rej) => {
+  res(10);
+})
+  .then(data => {
+    return new PromiseHandler((res, rej) => {
+      res(30);
+    }).then(data => {
+      return new PromiseHandler((res, rej) => {
+        res(data * 2);
+      });
+    });
+  })
+  .then(data => {
+    console.log(data, 8999);
+  });
+
+  let t = new PromiseHandler((res1 , rej1) => {
+   res1( new PromiseHandler((res , rej) => {
+      res(50)
+    }))
+  }).then((data) => {
+    console.log(data , 103333333333)
+  })

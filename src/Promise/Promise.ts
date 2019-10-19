@@ -4,6 +4,7 @@ const PROMISE_PENDING = 0;
 const PROMISE_RESOLVED = 1;
 const PROMISE_REJECTED = 2;
 const PROMISE_EVENT_QUEUE_TIME = 100;
+const asyncFunction = process && process.nextTick || setTimeout
 
 class Promise {
   constructor(firstTask, res, rej, assginer, puller , signature) {
@@ -21,7 +22,7 @@ class Promise {
   }
 
   runFirstTask = (task) => {
-    setTimeout(task, PROMISE_EVENT_QUEUE_TIME);
+    asyncFunction(task, PROMISE_EVENT_QUEUE_TIME);
   }
 
   notifyFetchTask = () => {

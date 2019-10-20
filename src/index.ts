@@ -20,7 +20,7 @@ let p = new PromiseHandler((res, rej) => {
     return 170;
   })
   .catch(err => {
-    console.log("Nope");
+    console.log("Nope Nope");
   })
   .then(data => {
     throw new Error(10);

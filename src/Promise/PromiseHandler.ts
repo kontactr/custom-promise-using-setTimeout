@@ -7,6 +7,9 @@ const PROMISE_EVENT_QUEUE_TIME = 100;
 
 export default class PromiseHandler {
   constructor(firstTask) {
+    this.generatedID = new Date().toString();
+    console.log(this.generatedID, 11);
+
     this.thens = [];
     this.catches = [];
 
@@ -19,15 +22,66 @@ export default class PromiseHandler {
       this.res,
       this.rej,
       this,
-      this.getPullTask
+      this.getPullTask,
+      PromiseHandler
     );
     this.preserveOutput = null;
     this.currentStatus = PROMISE_PENDING;
+    this.currentHandler = this;
   }
 
+  getOffBoarding = newHandler => {
+    //console.log("Hang tight....we are performing some offboarding task....:)");
+    let previousLength = newHandler.tasks.length;
+    //console.log(this.tasks.length , 32)
+    while (this.tasks.length) {
+      let offBoardTask = this.tasks.shift();
+      //console.log("In loop" , 35)
+      if (offBoardTask.type === "then") {
+        newHandler.then(offBoardTask.target);
+      } else if (offBoardTask.type === "catch") {
+        newHandler.catch(offBoardTask.target);
+      } else if (offBoardTask.type === "finally") {
+        newHandler.finally(offBoardTask.target);
+      }
+    }
+    //let nextLength = newHandler.tasks.length
+    this.currentHandler = newHandler;
+    if (!previousLength) {
+      //console.log(44 , newHandler.tasks.length , "In offboarding")
+      //console.log(newHandler.promise.notifyFetchTask , 46897)
+      newHandler.promise.notifyFetchTask();
+    }
+    //console.log("Done..... :)", newHandler.tasks.length);
+  };
+
   getPopFunctions = type => {
-    if (this.taskIndex < this.counterTask) {
-      while (this.tasks[this.taskIndex].type !== type) {
+    if (this.tasks.length) {
+      while (
+        this.tasks.length &&
+        (this.tasks[0].type !== type && this.tasks[0].type !== "finally")
+      ) {
+        this.tasks.shift();
+      }
+      if (this.tasks.length) {
+        let temp = this.tasks.shift();
+        return {
+          nextSuccess:
+            temp.type === type || temp.type === "finally"
+              ? temp.target
+              : undefined,
+          nextError:
+            temp.type === type || temp.type === "finally"
+              ? temp.target
+              : undefined
+        };
+      } else {
+        return {
+          nextSuccess: undefined,
+          nextError: undefined
+        };
+      }
+      /*while (this.tasks[this.taskIndex].type !== type) {
         this.taskIndex += 1;
       }
 
@@ -43,7 +97,7 @@ export default class PromiseHandler {
           nextSuccess: undefined,
           nextError: undefined
         };
-      }
+      }*/
     } else {
       return {
         nextSuccess: undefined,
@@ -52,21 +106,22 @@ export default class PromiseHandler {
     }
   };
 
-  res(data) {
+  res = data => {
     this.preserveOutput = data;
     this.currentStatus = PROMISE_RESOLVED;
     this.promise.notifyFetchTask();
-  }
+  };
 
-  rej(data) {
+  rej = data => {
     this.preserveOutput = data;
     this.currentStatus = PROMISE_REJECTED;
     this.promise.notifyFetchTask();
-  }
+  };
 
-  getPullTask() {
+  getPullTask = () => {
     if (this.currentStatus === PROMISE_RESOLVED) {
       let { nextError, nextSuccess } = this.getPopFunctions("then");
+
       return [nextSuccess, this.preserveOutput];
     } else if (this.currentStatus === PROMISE_REJECTED) {
       let { nextError, nextSuccess } = this.getPopFunctions("catch");
@@ -74,25 +129,44 @@ export default class PromiseHandler {
     } else {
       return [undefined, this.preserveOutput];
     }
-  }
+  };
 
   then(func) {
-    this.tasks.push({
+    this.currentHandler.tasks.push({
       target: func,
       type: "then"
     });
-    this.counterTask++;
-    this.thens.push(func);
-    return this;
+    //this.counterTask++;
+    //this.thens.push(func);
+    if (this.currentHandler.tasks.length === 1) {
+      this.currentHandler.promise.notifyFetchTask();
+    }
+    return this.currentHandler;
   }
 
   catch(func) {
-    this.tasks.push({
+    this.currentHandler.tasks.push({
       target: func,
       type: "catch"
     });
-    this.counterTask++;
-    this.catches.push(func);
-    return this;
+    //this.counterTask++;
+    //this.catches.push(func);
+    if (this.currentHandler.tasks.length === 1) {
+      this.currentHandler.promise.notifyFetchTask();
+    }
+    return this.currentHandler;
+  }
+
+  finally(func) {
+    this.currentHandler.tasks.push({
+      target: func,
+      type: "finally"
+    });
+    //this.counterTask++;
+    //this.catches.push(func);
+    if (this.currentHandler.tasks.length === 1) {
+      this.currentHandler.promise.notifyFetchTask();
+    }
+    return this.currentHandler;
   }
 }
